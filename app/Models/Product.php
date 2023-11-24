@@ -10,7 +10,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'series_id',
+        'series',
         'distance_code',
         'photo',
         'name',
@@ -21,6 +21,6 @@ class Product extends Model
         'packaging',
         'euro_palet',
         'price',
-        'discount', 
+        'discount',
     ];
 }
