@@ -18,6 +18,8 @@ return new class extends Migration
             $table->unsignedBigInteger('series_id');
             $table->foreign('series_id')->references('id')->on('products_series')->onUpdate('cascade')->onDelete('cascade');
             $table->string('distance_code');
+            $table->string('distance_min');
+            $table->string('distance_max');
             $table->string('photo');
             $table->string('name');
             $table->string('description');
@@ -26,8 +28,7 @@ return new class extends Migration
             $table->string('height_inch');
             $table->integer('packaging');
             $table->integer('euro_palet');
-            $table->integer('price');
-            $table->integer('discount'); 
+            $table->integer('price_net');
             $table->timestamps();
         });
     }
