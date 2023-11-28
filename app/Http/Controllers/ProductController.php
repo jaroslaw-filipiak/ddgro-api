@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Facades\DB;
 
 class ProductController extends Controller
 {
@@ -33,6 +34,26 @@ class ProductController extends Controller
             return response()->json([
                 'status' => 404,
                 'message' => 'Product Not Found',
+                'data' => []
+            ], 404);
+        }
+    }
+
+    public function show_by_series($name)
+    {
+
+        $products = DB::table('products')->where('series', $name)->get();
+
+        if ($products) {
+
+            return response()->json([
+                'status' => 200,
+                'data' => $products
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Products Not Found',
                 'data' => []
             ], 404);
         }
