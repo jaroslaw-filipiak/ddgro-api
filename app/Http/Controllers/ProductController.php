@@ -179,4 +179,24 @@ class ProductController extends Controller
             }
         }
     }
+
+    public function delete($id)
+    {
+        $product = Product::find($id);
+
+        if ($product) {
+            $product->delete();
+            return response()->json([
+                'status' => 200,
+                'message' => 'Product Deleted',
+
+            ], 200);
+        } else {
+            return response()->json([
+                'status' => 404,
+                'message' => 'Product Not Found',
+                'data' => []
+            ], 404);
+        }
+    }
 }
