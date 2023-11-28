@@ -4,11 +4,79 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\Product;
+use Illuminate\Support\Facades\Validator;
 
 class ProductController extends Controller
 {
     public function index()
     {
-        return Product::all();
+        $products = Product::all();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Products List',
+            'data' => $products
+        ], 200);
+    }
+
+    public function store(Request $request)
+    {
+
+        $validator = Validator::make($request->all(), [
+            'series' => 'required',
+            'type' => 'required',
+            'distance_code' => 'required',
+            'distance_min' => 'required',
+            'distance_max' => 'required',
+            'photo' => 'required',
+            'name' => 'required',
+            'description' => 'required',
+            'short_name' => 'required',
+            'height_mm' => 'required',
+            'height_inch' => 'required',
+            'packaging' => 'required',
+            'euro_palet' => 'required',
+            'price_net' => 'required',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status' => 422,
+                'message' => 'Bad Request',
+                'data' => $validator->messages()
+            ], 422);
+        } else {
+            $product = Product::create([
+                'series' => $request->series,
+                'type' => $request->type,
+                'distance_code' => $request->distance_code,
+                'distance_min' => $request->distance_min,
+                'distance_max' => $request->distance_max,
+                'photo' => $request->photo,
+                'name' => $request->name,
+                'description' => $request->description,
+                'short_name' => $request->short_name,
+                'height_mm' => $request->height_mm,
+                'height_inch' => $request->height_inch,
+                'packaging' => $request->packaging,
+                'euro_palet' => $request->euro_palet,
+                'price_net' => $request->price_net,
+
+            ]);
+
+            if ($product) {
+                return response()->json([
+                    'status' => 200,
+                    'message' => 'Product Created',
+                    'data' => $product
+                ], 200);
+            } else {
+                return response()->json([
+                    'status' => 500,
+                    'message' => 'Internal Server Error',
+                    'data' => []
+                ], 500);
+            }
+        }
     }
 }

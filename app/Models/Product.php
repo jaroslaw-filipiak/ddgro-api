@@ -11,16 +11,18 @@ class Product extends Model
 
     protected $fillable = [
         'series',
+        'type',
         'distance_code',
+        'distance_min',
+        'distance_max',
         'photo',
         'name',
         'description',
         'short_name',
         'height_mm',
         'height_inch',
-        'packaging',
         'euro_palet',
-        'price',
-        'discount',
+        'packaging',
+        'price_net',
     ];
 }
