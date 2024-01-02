@@ -5,21 +5,21 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Product extends Model
+class Accesories extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'series',
-        'type',
-        'distance_code',
-        'photo',
+        'code',
         'name',
         'short_name',
+        'photo',
         'height_mm',
         'height_inch',
-        'euro_palet',
         'packaging',
+        'euro_palet',
         'price_net',
+        'wood_width',
+        'pieces_in_m2',
     ];
 }

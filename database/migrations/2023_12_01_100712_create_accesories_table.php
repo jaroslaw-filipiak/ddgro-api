@@ -13,20 +13,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('products', function (Blueprint $table) {
+        Schema::create('accesories', function (Blueprint $table) {
             $table->id();
-            $table->string('series');
-            $table->string('type');
-            $table->string('distance_code')->nullable();
-            $table->string('photo')->nullable();
+            $table->timestamps();
+            $table->string('code')->nullable();
             $table->string('name');
             $table->string('short_name');
+            $table->string('photo')->nullable();
             $table->string('height_mm')->nullable();
             $table->string('height_inch')->nullable();
             $table->integer('packaging')->nullable();
             $table->integer('euro_palet')->nullable();
             $table->decimal('price_net', 8, 2)->nullable();
-            $table->timestamps();
+            $table->string('wood_width',)->nullable();
+            $table->integer('pieces_in_m2')->nullable();
         });
     }
 
@@ -37,6 +37,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('products');
+        Schema::dropIfExists('accesories');
     }
 };

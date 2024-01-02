@@ -6,9 +6,18 @@ use Illuminate\Http\Request;
 use App\Models\Product;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
+use App\Imports\ProductsImport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class ProductController extends Controller
 {
+    public function import()
+    {
+        Excel::import(new ProductsImport, 'products.xlsx');
+
+        return redirect('/')->with('success', 'All good!');
+    }
+
     public function index()
     {
         $products = Product::all();
