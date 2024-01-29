@@ -27,7 +27,6 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 |--------------------------------------------------------------------------
 */
 
-
 Route::get('products', [ProductController::class, 'index']);
 Route::get('products/{id}', [ProductController::class, 'show']);
 Route::get('products/series/{name}', [ProductController::class, 'show_by_series']);
@@ -52,4 +51,6 @@ Route::get('accesories', [AccesoriesController::class, 'index']);
 |--------------------------------------------------------------------------
 */
 
-Route::post('application', [ApplicationController::class, 'application']);
+Route::get('applications', [ApplicationController::class, 'index']);
+Route::post('application', [ApplicationController::class, 'store']);
+Route::get('application/{id}', [ApplicationController::class, 'show']);
