@@ -6,6 +6,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use App\Models\Application;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\ApplicationDataMail;
+
 
 class ApplicationController extends Controller
 {
@@ -20,7 +23,6 @@ class ApplicationController extends Controller
             'data' => $applications
         ], 200);
     }
-
 
     // TODO: MAIL SEND to client + save in db + email to ddgro admin: https://www.troposal.com/laravel-8-contact-form-api/
 
@@ -140,10 +142,14 @@ class ApplicationController extends Controller
         // Validation passed, so create a new application
         $application = Application::create($data);
 
+        // Send email
+        Mail::to('info@j-filipiak.pl')->send(new ApplicationDataMail($application));
+
+
         // Return a JSON response
         return response()->json([
             'success' => true,
-            'message' => 'Application stored successfully!',
+            'message' => 'Formularz został wysłany!',
             'application' => $application,
         ], 201);
     }
@@ -154,9 +160,19 @@ class ApplicationController extends Controller
         $applicaton = Application::find($id);
         if ($applicaton) {
 
+            $additionalAccessories = json_decode($applicaton->additional_accessories);
+
+            $filteredAccessories = array_filter(json_decode($applicaton->accesories), function ($accessory) use ($additionalAccessories) {
+                return in_array($accessory->id, $additionalAccessories);
+            });
+
             return response()->json([
-                'status' => 200,
-                'data' => $applicaton
+                'data' => collect($applicaton)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
+                'products' => json_decode($applicaton->products),
+                'accesories' => json_decode($applicaton->accesories),
+                'additional_accessories' =>  $filteredAccessories,
+                'm_standard' => json_decode($applicaton->m_standard),
+
             ], 200);
         } else {
             return response()->json([

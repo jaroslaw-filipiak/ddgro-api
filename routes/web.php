@@ -3,6 +3,8 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AccesoriesController;
+use App\Http\Controllers\ApplicationController;
+use App\Models\Application;
 
 /*
 |--------------------------------------------------------------------------
@@ -21,3 +23,10 @@ Route::get('/', function () {
 
 Route::get('products/import', [ProductController::class, 'import']);
 Route::get('accesories/import', [AccesoriesController::class, 'import']);
+
+
+Route::get('/mailable', function () {
+    $application = App\Models\Application::find(4);
+
+    return new App\Mail\ApplicationDataMail($application);
+});

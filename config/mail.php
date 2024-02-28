@@ -115,4 +115,28 @@ return [
         ],
     ],
 
+
+    /*
+    |--------------------------------------------------------------------------
+    | Stream SSL Certificate Verification for local development
+    |--------------------------------------------------------------------------
+    |
+    | Otherwise, you cannot send mail from outside the local environment.
+    | This is not healthy for security.
+    | So do not deploy this to your server.
+    |
+    |
+    | https://genotechies.medium.com/laravel-test-email-functionality-with-mailtrap-on-localhost-d0b3dd1ad2c2
+    |
+    */
+
+
+    'stream' => [
+        'ssl' => [
+            'allow_self_signed' => true,
+            'verify_peer' => false,
+            'verify_peer_name' => false,
+        ],
+    ],
+
 ];
