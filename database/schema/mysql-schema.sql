@@ -66,8 +66,6 @@ CREATE TABLE `products` (
   `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `type` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `series` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `distance_min` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `distance_max` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `distance_code` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `photo` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,
   `description` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL,

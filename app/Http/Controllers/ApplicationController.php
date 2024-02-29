@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\Application;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ApplicationDataMail;
+use Illuminate\Support\Facades\DB;
 
 
 class ApplicationController extends Controller
@@ -23,8 +24,6 @@ class ApplicationController extends Controller
             'data' => $applications
         ], 200);
     }
-
-    // TODO: MAIL SEND to client + save in db + email to ddgro admin: https://www.troposal.com/laravel-8-contact-form-api/
 
     public function store(Request $request)
     {
@@ -142,6 +141,7 @@ class ApplicationController extends Controller
         // Validation passed, so create a new application
         $application = Application::create($data);
 
+
         // Send email
         Mail::to('info@j-filipiak.pl')->send(new ApplicationDataMail($application));
 
@@ -151,27 +151,112 @@ class ApplicationController extends Controller
             'success' => true,
             'message' => 'Formularz został wysłany!',
             'application' => $application,
+
         ], 201);
     }
 
     public function show($id)
     {
 
-        $applicaton = Application::find($id);
-        if ($applicaton) {
+        $application = Application::find($id);
+        if ($application) {
 
-            $additionalAccessories = json_decode($applicaton->additional_accessories);
+            $additionalAccessories = json_decode($application->additional_accessories);
 
-            $filteredAccessories = array_filter(json_decode($applicaton->accesories), function ($accessory) use ($additionalAccessories) {
+            $filteredAccessories = array_filter(json_decode($application->accesories), function ($accessory) use ($additionalAccessories) {
                 return in_array($accessory->id, $additionalAccessories);
             });
 
+
+            // Group objects in 'm_standard' where 'range' value is equal
+            $m_standard = json_decode($application->m_standard);
+
+            $groupedMStandard = [];
+            foreach ($m_standard as $object) {
+                $range = $object->range;
+                if (!isset($groupedMStandard[$range])) {
+                    $groupedMStandard[$range] = [];
+                }
+                $groupedMStandard[$range][] = $object;
+            }
+
+            // Update $m_standard with grouped objects
+            $m_standard = $groupedMStandard;
+
+
+            // ranges
+
+            $filteredRanges = [];
+
+            foreach ($groupedMStandard as $range => $items) {
+                $filteredItems = array_filter($items, function ($item) {
+                    return $item->condition == 1;
+                });
+
+                $filteredRanges[$range] = array_values($filteredItems);
+            }
+
+
+            // summarize m_standard
+            $order_for_m_standard = [];
+
+            foreach ($filteredRanges as $range => $objects) {
+                $count_in_range = 0;
+                foreach ($objects as $object) {
+                    $count_in_range += $object->count_in_range;
+                }
+                $order_for_m_standard[$range] = ceil($count_in_range);
+            }
+
+            $m_standard_products = [];
+
+            // Filter products based on height_mm
+            // 1. take all products for selected application type
+
+            $products = DB::table('products')
+                ->where('type', $application->type)
+                ->get();
+
+
+            // 2. filter products based on height_mm
+            $keys = array_keys(array_filter($order_for_m_standard, function ($value) {
+                return $value > 0;
+            }));
+
+            foreach ($products as $object) {
+                if (in_array($object->height_mm, $keys)) {
+                    $m_standard_products[] = $object;
+                }
+            }
+
+            // to each product add count based on height_mm
+            foreach ($m_standard_products as $product) {
+                $product->count = $order_for_m_standard[$product->height_mm];
+            }
+
+            $order_total_price = 0;
+
+            foreach ($m_standard_products as $product) {
+                $order_total_price += $product->price_net * $product->count;
+            }
+
+            $order_total_price = number_format($order_total_price, 2);
+
+
             return response()->json([
-                'data' => collect($applicaton)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
-                'products' => json_decode($applicaton->products),
-                'accesories' => json_decode($applicaton->accesories),
+                // 'filterRanges' =>  $filteredRanges,
+                // 'products_for_selected_type' =>  $products,
+                'keys' => $keys,
+                'order' =>  $m_standard_products,
+                'order_total_price' => $order_total_price,
+                'how_many_items_in_order' =>  count($m_standard_products),
+                'summarize_m_standard' =>  $order_for_m_standard,
+                'data' => collect($application)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
+                // 'products' => json_decode($application->products),
+                // 'accesories' => json_decode($application->accesories),
                 'additional_accessories' =>  $filteredAccessories,
-                'm_standard' => json_decode($applicaton->m_standard),
+                'm_standard' => json_decode($application->m_standard),
+
 
             ], 200);
         } else {

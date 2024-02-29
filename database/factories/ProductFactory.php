@@ -24,8 +24,6 @@ class ProductFactory extends Factory
             'name' => fake()->name(),
             'series' => fake()->randomElement(['Spiral-Max', 'Seria Max', 'Raptor']),
             'type' => fake()->randomElement(['wood', 'slab']),
-            'distance_min' => fake()->randomNumber(2),
-            'distance_max' => fake()->randomNumber(3),
             'distance_code' => fake()->bothify('#??-#####'),
             'photo' => fake()->imageUrl(268, 156),
             'description' => fake()->text(100),

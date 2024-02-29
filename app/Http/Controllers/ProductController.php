@@ -13,9 +13,15 @@ class ProductController extends Controller
 {
     public function import()
     {
-        Excel::import(new ProductsImport, 'products.xlsx');
+        Excel::import(new ProductsImport, 'ddgro_products.xlsx');
 
-        return redirect('/')->with('success', 'All good!');
+        return response()->json([
+            'status' => 200,
+            'message' => 'imported!',
+
+        ], 200);
+
+        // return redirect('/')->with('success', 'All good!');
     }
 
     public function index()
@@ -92,8 +98,6 @@ class ProductController extends Controller
             'series' => 'required',
             'type' => 'required',
             'distance_code' => 'required',
-            'distance_min' => 'required',
-            'distance_max' => 'required',
             'photo' => 'required',
             'name' => 'required',
             'description' => 'required',
@@ -121,8 +125,6 @@ class ProductController extends Controller
                     'series' => $request->series,
                     'type' => $request->type,
                     'distance_code' => $request->distance_code,
-                    'distance_min' => $request->distance_min,
-                    'distance_max' => $request->distance_max,
                     'photo' => $request->photo,
                     'name' => $request->name,
                     'description' => $request->description,
@@ -156,8 +158,6 @@ class ProductController extends Controller
             'series' => 'required',
             'type' => 'required',
             'distance_code' => 'required',
-            'distance_min' => 'required',
-            'distance_max' => 'required',
             'photo' => 'required',
             'name' => 'required',
             'description' => 'required',
@@ -180,8 +180,6 @@ class ProductController extends Controller
                 'series' => $request->series,
                 'type' => $request->type,
                 'distance_code' => $request->distance_code,
-                'distance_min' => $request->distance_min,
-                'distance_max' => $request->distance_max,
                 'photo' => $request->photo,
                 'name' => $request->name,
                 'description' => $request->description,
