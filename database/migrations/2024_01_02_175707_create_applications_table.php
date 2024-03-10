@@ -40,9 +40,12 @@ return new class extends Migration
             $table->integer('slabs_count');
             $table->integer('supports_count');
             $table->json('products');
-            $table->json('accesories');
+            $table->json('accesories')->nullable();
             $table->json('additional_accessories');
-            $table->json('m_standard');
+            $table->json('m_standard')->nullable();
+            $table->json('m_spiral')->nullable();
+            $table->json('m_max')->nullable();
+            $table->json('m_alu')->nullable();
         });
     }
 

@@ -5,6 +5,7 @@ use App\Http\Controllers\ProductController;
 use App\Http\Controllers\AccesoriesController;
 use App\Http\Controllers\ApplicationController;
 use App\Models\Application;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,4 +30,13 @@ Route::get('/mailable', function () {
     $application = App\Models\Application::find(4);
 
     return new App\Mail\ApplicationDataMail($application);
+});
+
+Route::get('/pdf-template-preview', function () {
+    return view('pdf-template');
+});
+
+Route::get('/pdf-generate', function () {
+    $pdf = PDF::loadView('pdf-template');
+    return $pdf->download('pdf-template.pdf');
 });

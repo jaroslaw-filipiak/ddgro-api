@@ -36,6 +36,9 @@ class Application extends Model
         'products',
         'accesories',
         'additional_accessories',
-        'm_standard'
+        'm_standard',
+        'm_spiral',
+        'm_max',
+        'm_alu'
     ];
 }

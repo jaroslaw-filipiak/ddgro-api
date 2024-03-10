@@ -1,0 +1,45 @@
+@font-face {
+    font-family: 'Geogrotesque Bd';
+    src: url('Geogrotesque-Bold.woff2') format('woff2'),
+        url('Geogrotesque-Bold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geogrotesque SmBd';
+    src: url('Geogrotesque-SemiBold.woff2') format('woff2'),
+        url('Geogrotesque-SemiBold.woff') format('woff');
+    font-weight: 600;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geogrotesque Md';
+    src: url('Geogrotesque-Medium.woff2') format('woff2'),
+        url('Geogrotesque-Medium.woff') format('woff');
+    font-weight: 500;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Geogrotesque Rg';
+    src: url('Geogrotesque-Regular.woff2') format('woff2'),
+        url('Geogrotesque-Regular.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
+@font-face {
+    font-family: 'Festival Budaya XXXI';
+    src: url('FestivalBudayaXXXI.woff2') format('woff2'),
+        url('FestivalBudayaXXXI.woff') format('woff');
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+}
+
