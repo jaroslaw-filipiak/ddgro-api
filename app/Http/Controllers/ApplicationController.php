@@ -189,10 +189,12 @@ class ApplicationController extends Controller
 
 
             // ranges
-
+        
             $filteredRanges = [];
             $filteredRangesSpiral = [];
             $filteredRangesMax = [];
+
+          
 
             foreach ($groupedMStandard as $range => $items) {
                 $filteredItems = array_filter($items, function ($item) {
@@ -220,6 +222,34 @@ class ApplicationController extends Controller
             }
 
 
+           
+            // Specify the keys to remove from $filteredRangesSpiral
+            // spiral 10 - 210
+            // standard 30 - 420
+            // max 45 - 950
+            //TODO: spiral zobacz rangesy , brakuje jednego oraz wyrzuca klucz ""
+
+            $keysToRemoveFromStandard = ['10-17', '17-30', '350-550', '550-750', '750-950'];
+            $keysToRemoveFromSpiral = ['750-950', '550-750', '350-550', "220-320", "320-420" , ""];
+            $keysToRemoveFromMax = ['10-17', '17-30', ];
+
+            
+            // Remove the specified keys from M_STANDARD ==> $filteredRanges
+            foreach ($keysToRemoveFromStandard as $key) {
+                unset($filteredRanges[$key]);
+            }
+           
+            // Remove the specified keys from M_SPIRAL ==> $filteredRangesSpiral
+            foreach ($keysToRemoveFromSpiral as $key) {
+                unset($filteredRangesSpiral[$key]);
+            }
+
+            // Remove the specified keys from M_MAX ==> $filteredRangesMax
+            foreach ($keysToRemoveFromMax as $key) {
+                unset($filteredRangesMax[$key]);
+            }
+
+        
             // summarize m_standard
             $order_for_m_standard = [];
             $order_for_m_spiral = [];
@@ -230,7 +260,7 @@ class ApplicationController extends Controller
                 foreach ($objects as $object) {
                     $count_in_range += $object->count_in_range;
                 }
-                $order_for_m_standard[$range] = ceil($count_in_range);
+                $order_for_m_standard[$range] = round($count_in_range);
             }
 
            
@@ -239,7 +269,8 @@ class ApplicationController extends Controller
                 foreach ($objects as $object) {
                     $count_in_range += $object->count_in_range;
                 }
-                $order_for_m_spiral[$range] = ceil($count_in_range);
+                $order_for_m_spiral[$range] = round($count_in_range);
+               
             }
 
             foreach ($filteredRangesMax as $range => $objects) {
@@ -247,7 +278,7 @@ class ApplicationController extends Controller
                 foreach ($objects as $object) {
                     $count_in_range += $object->count_in_range;
                 }
-                $order_for_m_max[$range] = ceil($count_in_range);
+                $order_for_m_max[$range] = round($count_in_range);
             }
 
             $m_standard_products = [];
@@ -312,16 +343,20 @@ class ApplicationController extends Controller
             // to each product add count based on height_mm
             foreach ($m_standard_products as $product) {
                 $product->count = $order_for_m_standard[$product->height_mm];
+                // to each product add count based on height_mm and calculate total
+                $product->total = number_format( $product->price_net * $product->count, 2);
             }
 
              // to each product add count based on height_mm
              foreach ($m_spiral_products as $product) {
                 $product->count = $order_for_m_spiral[$product->height_mm];
+                $product->total = number_format( $product->price_net * $product->count, 2);
             }
 
              // to each product add count based on height_mm
              foreach ($m_max_products as $product) {
                 $product->count = $order_for_m_max[$product->height_mm];
+                $product->total = number_format( $product->price_net * $product->count, 2);
             }
 
             //  total price
@@ -355,30 +390,32 @@ class ApplicationController extends Controller
                 // 'groupedMStandard' => $groupedMStandard,
                 // 'groupedMSpiral' => $groupedMSpiral,
                 // 'groupedMMax' => $groupedMMax,
-                'filterRanges' =>  $filteredRanges,
-                'filterRangesSpiral' =>  $filteredRangesSpiral,
-                'filterRangesMax' =>  $filteredRangesMax,
+                // 'filterRanges' =>  $filteredRanges,
+                // 'filterRangesSpiral' =>  $filteredRangesSpiral,
+                // 'filterRangesMax' =>  $filteredRangesMax,
                 // 'products_for_selected_type' =>  $products,
                 // 'm_spiral' => $m_spiral,
                 'keys' => $keys,
                 'keysSpiral' => $keysSpiral,
                 'keysMax' => $keysMax,
                 'order_m_standard' =>  $m_standard_products,
-                // 'order_m_spiral' =>  $m_spiral_products,
+                'order_m_spiral' =>  $m_spiral_products,
                 'order_m_max' =>  $m_max_products,
                 // 'order_total_price' => $order_total_price,
                 // 'order_total_price_spiral' => $order_total_price_spiral,
-                'order_total_price_max' => $order_total_price_spiral,
-                'how_many_items_in_order' =>  count($m_standard_products),
+                // 'order_total_price_max' => $order_total_price_spiral,
+                // 'how_many_items_in_order' =>  count($m_standard_products),
                 'summarize_m_standard' =>  $order_for_m_standard,
                 'summarize_m_spiral' =>  $order_for_m_spiral,
                 'summarize_m_max' =>  $order_for_m_max,
-                // 'data' => collect($application)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
-                // 'products' => json_decode($application->products),
+                'data' => collect($application)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
+                'products' => json_decode($application->products),
                
-                // 'accesories' => json_decode($application->accesories),
-                //'additional_accessories' =>  $filteredAccessories,
-                //'m_standard' => json_decode($application->m_standard),
+                'accesories' => json_decode($application->accesories),
+                'additional_accessories' =>  $filteredAccessories,
+                'm_standard' => json_decode($application->m_standard),
+                'm_spiral' => json_decode($application->m_spiral),
+                'm_max' => json_decode($application->m_max),
                
 
             ], 200);
