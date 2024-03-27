@@ -309,7 +309,7 @@ class ApplicationController extends Controller
 
 
             // 2. filter products based on height_mm
-            $keys = array_keys(array_filter($order_for_m_standard, function ($value) {
+            $keysStandard = array_keys(array_filter($order_for_m_standard, function ($value) {
                 return $value > 0;
             }));
 
@@ -322,7 +322,7 @@ class ApplicationController extends Controller
             }));
 
             foreach ($products_m_standard as $object) {
-                if (in_array($object->height_mm, $keys)) {
+                if (in_array($object->height_mm, $keysStandard)) {
                     $m_standard_products[] = $object;
                 }
             }
@@ -387,6 +387,11 @@ class ApplicationController extends Controller
             // check main system 
             $dominant_series = $application->main_system;
 
+            // check lowest and highest range for full order
+            $lowest = $application->lowest;
+            $highest = $application->highest;
+
+           
 
             return response()->json([
                 // 'products_m_spiral'=> $products_m_spiral,
@@ -399,7 +404,7 @@ class ApplicationController extends Controller
                 // 'products_for_selected_type' =>  $products,
                 // 'm_spiral' => $m_spiral,
                 'dominant_series' => $dominant_series,
-                'keys' => $keys,
+                'keysStandard' => $keysStandard,
                 'keysSpiral' => $keysSpiral,
                 'keysMax' => $keysMax,
                 'order_m_standard' =>  $m_standard_products,
