@@ -384,6 +384,9 @@ class ApplicationController extends Controller
             $order_total_price_spiral = number_format($order_total_price_spiral, 2);
             $order_total_price_max = number_format($order_total_price_max, 2);
 
+            // check main system 
+            $dominant_series = $application->main_system;
+
 
             return response()->json([
                 // 'products_m_spiral'=> $products_m_spiral,
@@ -395,6 +398,7 @@ class ApplicationController extends Controller
                 // 'filterRangesMax' =>  $filteredRangesMax,
                 // 'products_for_selected_type' =>  $products,
                 // 'm_spiral' => $m_spiral,
+                'dominant_series' => $dominant_series,
                 'keys' => $keys,
                 'keysSpiral' => $keysSpiral,
                 'keysMax' => $keysMax,
