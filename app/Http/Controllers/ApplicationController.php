@@ -141,291 +141,148 @@ class ApplicationController extends Controller
         $application = Application::find($id);
         if ($application) {
 
-            $additionalAccessories = json_decode($application->additional_accessories);
 
-            $filteredAccessories = array_filter(json_decode($application->accesories), function ($accessory) use ($additionalAccessories) {
-                return in_array($accessory->id, $additionalAccessories);
-            });
-            
-            // Group objects in m... where 'range' value is equal
-            $m_standard = json_decode($application->m_standard);
-            $m_spiral = json_decode($application->m_spiral);
-            $m_max = json_decode($application->m_max);
-
-            $groupedMStandard = [];
-            $groupedMSpiral = [];
-            $groupedMMax = [];
-
-            foreach ($m_standard as $object) {
-                $range = $object->range;
-                if (!isset($groupedMStandard[$range])) {
-                    $groupedMStandard[$range] = [];
-                }
-                $groupedMStandard[$range][] = $object;
-            }
-
-
-            foreach ($m_spiral as $object) {
-                $range = $object->range;
-                if (!isset($groupedMSpiral[$range])) {
-                    $groupedMSpiral[$range] = [];
-                }
-                $groupedMSpiral[$range][] = $object;
-            }
-            foreach ($m_max as $object) {
-                $range = $object->range;
-                if (!isset($groupedMMax[$range])) {
-                    $groupedMMax[$range] = [];
-                }
-                $groupedMMax[$range][] = $object;
-            }
-
-
-            
-            // Update $m_standard with grouped objects
-            $m_standard = $groupedMStandard;
-            $m_spiral = $groupedMSpiral;
-            $m_max = $groupedMMax;
-
-
-            // ranges
-        
-            $filteredRanges = [];
-            $filteredRangesSpiral = [];
-            $filteredRangesMax = [];
-
-          
-
-            foreach ($groupedMStandard as $range => $items) {
-                $filteredItems = array_filter($items, function ($item) {
-                    return $item->condition == 1;
-                });
-
-                $filteredRanges[$range] = array_values($filteredItems);
-            }
-
-        
-            foreach ($groupedMSpiral as $range => $items) {
-                $filteredItemsSpiral = array_filter($items, function ($item) {
-                    return $item->condition == 1;
-                });
-
-                $filteredRangesSpiral[$range] = array_values($filteredItemsSpiral);
-            }
-
-            foreach ($groupedMMax as $range => $items) {
-                $filteredItemsMax = array_filter($items, function ($item) {
-                    return $item->condition == 1;
-                });
-
-                $filteredRangesMax[$range] = array_values($filteredItemsMax);
-            }
-
-
-           
-            // Specify the keys to remove from $filteredRangesSpiral
-            // spiral 10 - 210
-            // standard 30 - 420
-            // max 45 - 950
-            //TODO: spiral zobacz rangesy , brakuje jednego oraz wyrzuca klucz ""
-
-            $keysToRemoveFromStandard = ['10-17', '17-30', '350-550', '550-750', '750-950'];
-            $keysToRemoveFromSpiral = ['750-950', '550-750', '350-550', "220-320", "320-420" , ""];
-            $keysToRemoveFromMax = ['10-17', '17-30', ];
-
-            
-            // Remove the specified keys from M_STANDARD ==> $filteredRanges
-            foreach ($keysToRemoveFromStandard as $key) {
-                unset($filteredRanges[$key]);
-            }
-           
-            // Remove the specified keys from M_SPIRAL ==> $filteredRangesSpiral
-            foreach ($keysToRemoveFromSpiral as $key) {
-                unset($filteredRangesSpiral[$key]);
-            }
-
-            // Remove the specified keys from M_MAX ==> $filteredRangesMax
-            foreach ($keysToRemoveFromMax as $key) {
-                unset($filteredRangesMax[$key]);
-            }
-
-        
-            // summarize m_standard
-            $order_for_m_standard = [];
-            $order_for_m_spiral = [];
-            $order_for_m_max = [];
-
-            foreach ($filteredRanges as $range => $objects) {
-                $count_in_range = 0;
-                foreach ($objects as $object) {
-                    $count_in_range += $object->count_in_range;
-                }
-                $order_for_m_standard[$range] = round($count_in_range);
-            }
-
-           
-            foreach ($filteredRangesSpiral as $range => $objects) {
-                $count_in_range = 0;
-                foreach ($objects as $object) {
-                    $count_in_range += $object->count_in_range;
-                }
-                $order_for_m_spiral[$range] = round($count_in_range);
-               
-            }
-
-            foreach ($filteredRangesMax as $range => $objects) {
-                $count_in_range = 0;
-                foreach ($objects as $object) {
-                    $count_in_range += $object->count_in_range;
-                }
-                $order_for_m_max[$range] = round($count_in_range);
-            }
-
-            $m_standard_products = [];
-            $m_spiral_products = [];
-            $m_max_products = [];
-
-            // Filter products based on height_mm
-            // 1. take all products for selected application type
-
-            $products = DB::table('products')
-            ->where('type', $application->type)
-            ->get();
-
-                $products_m_standard = DB::table('products')
-                ->where('type', $application->type)
-                ->where('series', 'standard')
-                ->get();    
-
-                $products_m_spiral = DB::table('products')
-                ->where('type', $application->type)
-                ->where('series', 'spiral')
-                ->get();   
-
-                $products_m_max = DB::table('products')
-                ->where('type', $application->type)
-                ->where('series', 'max')
-                ->get();   
-
-
-            // 2. filter products based on height_mm
-            $keysStandard = array_keys(array_filter($order_for_m_standard, function ($value) {
-                return $value > 0;
-            }));
-
-            $keysSpiral = array_keys(array_filter($order_for_m_spiral, function ($value) {
-                return $value > 0;
-            }));
-
-            $keysMax = array_keys(array_filter($order_for_m_max, function ($value) {
-                return $value > 0;
-            }));
-
-            foreach ($products_m_standard as $object) {
-                if (in_array($object->height_mm, $keysStandard)) {
-                    $m_standard_products[] = $object;
-                }
-            }
-
-            
-            foreach ($products_m_spiral as $object) {
-                if (in_array($object->height_mm, $keysSpiral)) {
-                    $m_spiral_products[] = $object;
-                }
-            }
-
-            foreach ($products_m_max as $object) {
-                if (in_array($object->height_mm, $keysMax)) {
-                    $m_max_products[] = $object;
-                }
-            }
-
-            // to each product add count based on height_mm
-            foreach ($m_standard_products as $product) {
-                $product->count = $order_for_m_standard[$product->height_mm];
-                // to each product add count based on height_mm and calculate total
-                $product->total = number_format( $product->price_net * $product->count, 2);
-            }
-
-             // to each product add count based on height_mm
-             foreach ($m_spiral_products as $product) {
-                $product->count = $order_for_m_spiral[$product->height_mm];
-                $product->total = number_format( $product->price_net * $product->count, 2);
-            }
-
-             // to each product add count based on height_mm
-             foreach ($m_max_products as $product) {
-                $product->count = $order_for_m_max[$product->height_mm];
-                $product->total = number_format( $product->price_net * $product->count, 2);
-            }
-
-            //  total price
-
-            $order_total_price = 0;
-            $order_total_price_spiral = 0;
-            $order_total_price_max = 0;
-            
-
-           
-            // TODO : Fix calculations problem
-            foreach ($m_standard_products as $product) {
-                $order_total_price += $product->price_net * $product->count;
-            }
-         
-            foreach ($m_spiral_products as $product) {
-                $order_total_price_spiral += $product->price_net * $product->count;
-            }
-         
-            foreach ($m_max_products as $product) {
-                $order_total_price_max += $product->price_net * $product->count;
-            }
-
-            $order_total_price = number_format($order_total_price, 2);
-            $order_total_price_spiral = number_format($order_total_price_spiral, 2);
-            $order_total_price_max = number_format($order_total_price_max, 2);
-
-            // check main system 
-            $dominant_series = $application->main_system;
-
-            // check lowest and highest range for full order
+            // 1. Get lowest + highest
             $lowest = $application->lowest;
             $highest = $application->highest;
 
-           
+        
+            // 2. Get the products from main_system 
 
+            switch($application->main_system) {
+                case 'standard':
+                    $main_system = json_decode($application->m_standard);
+                    $main_system_range_min = 30;
+                    $main_system_range_max = 420;
+                    break;
+                case 'spiral':
+                    $main_system = json_decode($application->m_spiral);
+                    $main_system_range_min = 10;
+                    $main_system_range_max = 210;
+                    break;
+                case 'max':
+                    $main_system = json_decode($application->m_max);
+                    $main_system_range_min = 45;
+                    $main_system_range_max = 950;
+                    break;
+            }
+
+            // 3. take from #main_system all records that wys_mm is between $main_system_range_min and $main_system_range_max
+            $main_system = collect($main_system)->filter(function ($value, $key) use ($main_system_range_min, $main_system_range_max) {
+                return $value->wys_mm >= $main_system_range_min && $value->wys_mm <= $main_system_range_max;
+            });
+
+            // 4 main system grouped and summarized
+
+            $main_system_grouped = [];
+            $main_system_summarized = [];
+
+            foreach ($main_system as $object) {
+                $range = $object->range;
+                if (!isset($main_system_grouped[$range])) {
+                    $main_system_grouped[$range] = [];
+                }
+                $main_system_grouped[$range][] = $object;
+            }
+
+            foreach ($main_system_grouped as $range => $objects) {
+                $count_in_range = 0;
+                foreach ($objects as $object) {
+                    $count_in_range += $object->count_in_range;
+                }
+                $main_system_summarized[$range] = round($count_in_range);
+            }
+
+
+            // 5 check if there are any records under main system range
+
+
+            // output range from $lowest to $main_system_range_min
+            $diff_lowest = $main_system_range_min - $lowest;
+
+            if ($diff_lowest > 0 && $diff_lowest < $main_system_range_min) {
+
+                $under_main_system_range= collect(json_decode($application->m_spiral))->filter(function ($value, $key) use ($lowest, $main_system_range_min) {
+                    return $value->wys_mm >= $lowest && $value->wys_mm < $main_system_range_min;
+                });
+
+                $under_main_system_grouped = [];
+
+                foreach ($under_main_system_range as $object) {
+                    $range = $object->range;
+                    if (!isset($under_main_system_grouped[$range])) {
+                        $under_main_system_grouped[$range] = [];
+                    }
+                    $under_main_system_grouped[$range][] = $object;
+                }
+    
+                $under_main_system_summarized = [];
+    
+                foreach ($under_main_system_grouped as $range => $objects) {
+                    $count_in_range = 0;
+                    foreach ($objects as $object) {
+                        $count_in_range += $object->count_in_range;
+                    }
+                    $under_main_system_summarized[$range] = round($count_in_range);
+                }
+                
+            };
+
+            // 6 check if there are any records higher than main system range
+
+            $diff_highest = $highest - $main_system_range_max;
+
+            if ($diff_highest > 0 && $diff_highest < $main_system_range_max) {
+
+                $over_main_system_range= collect(json_decode($application->m_max))->filter(function ($value, $key) use ($main_system_range_max, $highest) {
+                    return $value->wys_mm > $main_system_range_max && $value->wys_mm <= $highest;
+                });
+
+                $over_main_system_grouped = [];
+
+                foreach ($over_main_system_range as $object) {
+                    $range = $object->range;
+                    if (!isset($over_main_system_grouped[$range])) {
+                        $over_main_system_grouped[$range] = [];
+                    }
+                    $over_main_system_grouped[$range][] = $object;
+                }
+    
+                $over_main_system_summarized = [];
+    
+                foreach ($over_main_system_grouped as $range => $objects) {
+                    $count_in_range = 0;
+                    foreach ($objects as $object) {
+                        $count_in_range += $object->count_in_range;
+                    }
+                    $over_main_system_summarized[$range] = round($count_in_range);
+                }
+                
+            }
+
+
+            // under main system grouped and summarized
+
+           
             return response()->json([
-                // 'products_m_spiral'=> $products_m_spiral,
-                // 'groupedMStandard' => $groupedMStandard,
-                // 'groupedMSpiral' => $groupedMSpiral,
-                // 'groupedMMax' => $groupedMMax,
-                // 'filterRanges' =>  $filteredRanges,
-                // 'filterRangesSpiral' =>  $filteredRangesSpiral,
-                // 'filterRangesMax' =>  $filteredRangesMax,
-                // 'products_for_selected_type' =>  $products,
-                // 'm_spiral' => $m_spiral,
-                'dominant_series' => $dominant_series,
-                'keysStandard' => $keysStandard,
-                'keysSpiral' => $keysSpiral,
-                'keysMax' => $keysMax,
-                'order_m_standard' =>  $m_standard_products,
-                'order_m_spiral' =>  $m_spiral_products,
-                'order_m_max' =>  $m_max_products,
-                // 'order_total_price' => $order_total_price,
-                // 'order_total_price_spiral' => $order_total_price_spiral,
-                // 'order_total_price_max' => $order_total_price_spiral,
-                // 'how_many_items_in_order' =>  count($m_standard_products),
-                'summarize_m_standard' =>  $order_for_m_standard,
-                'summarize_m_spiral' =>  $order_for_m_spiral,
-                'summarize_m_max' =>  $order_for_m_max,
-                'data' => collect($application)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
-                'products' => json_decode($application->products),
+
+                'lowest' => $lowest,
+                'highest' => $highest,
+                'diff_lowest' => $diff_lowest,
+                'diff_highest' => $diff_highest,
+                'main_system' => $main_system,
+                'main_system_grouped' => $main_system_grouped,
+                'main_system_summarized' => $main_system_summarized,
+                'under_main_system_range' => $under_main_system_range,
+                'under_main_system_grouped' => $under_main_system_grouped,
+                'under_main_system_summarized' => $under_main_system_summarized,
+                'over_main_system_range' => $over_main_system_range,
+                'over_main_system_grouped' => $over_main_system_grouped,
+                'over_main_system_summarized' => $over_main_system_summarized,
+                'main_system_range_min' => $main_system_range_min,
+                'main_system_range_max' => $main_system_range_max,
                
-                'accesories' => json_decode($application->accesories),
-                'additional_accessories' =>  $filteredAccessories,
-                'm_standard' => json_decode($application->m_standard),
-                'm_spiral' => json_decode($application->m_spiral),
-                'm_max' => json_decode($application->m_max),
-               
+                 'data' => collect($application)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
 
             ], 200);
         } else {
