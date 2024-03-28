@@ -199,6 +199,9 @@ class ApplicationController extends Controller
 
             // output range from $lowest to $main_system_range_min
             $diff_lowest = $main_system_range_min - $lowest;
+            $under_main_system_range = [];
+            $under_main_system_grouped = [];
+            $under_main_system_summarized = [];
 
             if ($diff_lowest > 0 && $diff_lowest < $main_system_range_min) {
 
@@ -229,14 +232,19 @@ class ApplicationController extends Controller
             };
 
             // 6 check if there are any records higher than main system range
+            // TODO: przy over nie moge na pałe pobierać maxa z main system, bo moze byc inny i tak samo chyba przy min ?
 
             $diff_highest = $highest - $main_system_range_max;
+            $over_main_system_range = [];
+            $over_main_system_grouped = [];
+            $over_main_system_summarized = [];
 
-            if ($diff_highest > 0 && $diff_highest < $main_system_range_max) {
+            if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
 
                 $over_main_system_range= collect(json_decode($application->m_max))->filter(function ($value, $key) use ($main_system_range_max, $highest) {
                     return $value->wys_mm > $main_system_range_max && $value->wys_mm <= $highest;
                 });
+
 
                 $over_main_system_grouped = [];
 
