@@ -141,6 +141,17 @@ class ApplicationController extends Controller
         $application = Application::find($id);
         if ($application) {
 
+            // prevent undefined variables 
+
+            $over_main_system_grouped_level_2 = 'initial';
+            $over_main_system_summarized_level_2 = 'initial';
+            $over_main_system_name = 'initial';
+            $over_main_system_level_2_name = 'initial';
+            $under_main_system_name = 'initial';
+            $under_main_system_range = 'initial';
+            $under_main_system_grouped = 'initial';
+            $under_main_system_summarized= 'initial';
+
 
             // 1. Get lowest + highest
             $lowest = $application->lowest;
@@ -168,6 +179,8 @@ class ApplicationController extends Controller
             }
 
             // 3. take from #main_system all records that wys_mm is between $main_system_range_min and $main_system_range_max
+            
+
             $main_system = collect($main_system)->filter(function ($value, $key) use ($main_system_range_min, $main_system_range_max) {
                 return $value->wys_mm >= $main_system_range_min && $value->wys_mm <= $main_system_range_max;
             });
@@ -193,6 +206,27 @@ class ApplicationController extends Controller
                 $main_system_summarized[$range] = round($count_in_range);
             }
 
+             // tutaj sprawdzam czy powyższy forach w ogóle wyrzucił jakiś wynik ponieważ
+                // może się zdarzyć taka sytuacja, że klient w formularzu zaznaczy wartości min 300 max 600
+                // i zaznaczy główny system spiral, który ma zakres od 10 do 210 a w minimum podanym prez klienta jest 
+                // 300 także po prostu będzie pusta tablica
+
+                $has_atleast_one_item_in_main_system = false;
+
+                foreach ($main_system_summarized as $range => $value) {
+                    if ($value > 0) {
+                        $has_atleast_one_item_in_main_system = true;
+                        break;
+                    }
+                }
+
+                if (!$has_atleast_one_item_in_main_system) {
+                //   trzeba obsłużyć tą sytuację
+        
+                $systems = ['spiral','standard','max'];
+
+                }
+
 
             // 5 check if there are any records under main system range
 
@@ -205,7 +239,25 @@ class ApplicationController extends Controller
 
             if ($diff_lowest > 0 && $diff_lowest < $main_system_range_min) {
 
-                $under_main_system_range= collect(json_decode($application->m_spiral))->filter(function ($value, $key) use ($lowest, $main_system_range_min) {
+                switch($application->main_system) {
+                    //  tak musi zostać to na przyszlośc ponieważ dojdą nowe systemy
+                    case 'standard':
+                        $under = $application->m_spiral;
+                        $under_main_system_name = 'spiral';
+                        break;
+                    case 'spiral':
+                        $under = $application->m_spiral;
+                        $under_main_system_name = 'spiral';
+                        break;
+                    case 'max':
+                        $under = $application->m_spiral;
+                        $under_main_system_name = 'spiral';
+                        break;
+                }
+
+            
+              
+                $under_main_system_range= collect(json_decode($under))->filter(function ($value, $key) use ($lowest, $main_system_range_min) {
                     return $value->wys_mm >= $lowest && $value->wys_mm < $main_system_range_min;
                 });
 
@@ -228,6 +280,10 @@ class ApplicationController extends Controller
                     }
                     $under_main_system_summarized[$range] = round($count_in_range);
                 }
+
+               
+
+
                 
             };
 
@@ -239,10 +295,29 @@ class ApplicationController extends Controller
             $over_main_system_grouped = [];
             $over_main_system_summarized = [];
 
-            if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
+            if ($diff_highest > 0 && $diff_highest < $main_system_range_max) {
 
-                $over_main_system_range= collect(json_decode($application->m_max))->filter(function ($value, $key) use ($main_system_range_max, $highest) {
-                    return $value->wys_mm > $main_system_range_max && $value->wys_mm <= $highest;
+                switch($application->main_system) {
+                    //  tak musi zostać to na przyszlośc ponieważ dojdą nowe systemy
+                    case 'standard':
+                        $over = $application->m_max;
+                        $over_main_system_name = 'max';
+                        $over_main_system_max = 950;
+                        break;
+                    case 'spiral':
+                        $over = $application->m_standard;
+                         $over_main_system_name = 'standard';
+                         $over_main_system_max = 420;
+                        break;
+                    case 'max':
+                        $over = $application->m_max;
+                         $over_main_system_name = 'max';
+                         $over_main_system_max = 420;
+                        break;
+                }
+
+                $over_main_system_range= collect(json_decode($over))->filter(function ($value, $key) use ($main_system_range_max, $over_main_system_max) {
+                    return $value->wys_mm > $main_system_range_max && $value->wys_mm <= $over_main_system_max;
                 });
 
 
@@ -265,22 +340,59 @@ class ApplicationController extends Controller
                     }
                     $over_main_system_summarized[$range] = round($count_in_range);
                 }
+
+                
+                // scenaro if over_main_system_max is lower than highest
+                // tu zawsze sprawdzasz wsponiki max jako najwyższy stopień
+
+                $diff_highest_level_2 = $highest - $over_main_system_max;
+
+                if($diff_highest_level_2 > 0) {
+                    $over_main_system_range_level_2 = collect(json_decode($application->m_max))->filter(function ($value, $key) use ($over_main_system_max, $highest) {
+                        return $value->wys_mm > $over_main_system_max && $value->wys_mm <= $highest;
+                    });
+    
+                    $over_main_system_grouped_level_2 = [];
+    
+                    foreach ($over_main_system_range_level_2 as $object) {
+                        $range = $object->range;
+                        if (!isset($over_main_system_grouped_level_2[$range])) {
+                            $over_main_system_grouped_level_2[$range] = [];
+                        }
+                        $over_main_system_grouped_level_2[$range][] = $object;
+                    }
+        
+                    $over_main_system_summarized_level_2 = [];
+        
+                    foreach ($over_main_system_grouped_level_2 as $range => $objects) {
+                        $count_in_range = 0;
+                        foreach ($objects as $object) {
+                            $count_in_range += $object->count_in_range;
+                        }
+                        $over_main_system_summarized_level_2[$range] = round($count_in_range);
+                    }
+                }
                 
             }
 
 
-            // under main system grouped and summarized
-
+          
            
             return response()->json([
-
+                'has_items_in_main_system' => $has_atleast_one_item_in_main_system,
+                'over_main_system_grouped_level_2' => $over_main_system_grouped_level_2,
+                'over_main_system_summarized_level_2' => $over_main_system_summarized_level_2,
                 'lowest' => $lowest,
                 'highest' => $highest,
                 'diff_lowest' => $diff_lowest,
                 'diff_highest' => $diff_highest,
+                'main_system_name' => $application->main_system,
+                'over_main_system_name' => $over_main_system_name,
+                'over_main_system_level_2_name' => 'max',
                 'main_system' => $main_system,
                 'main_system_grouped' => $main_system_grouped,
                 'main_system_summarized' => $main_system_summarized,
+                'under_main_system_name' => $under_main_system_name,
                 'under_main_system_range' => $under_main_system_range,
                 'under_main_system_grouped' => $under_main_system_grouped,
                 'under_main_system_summarized' => $under_main_system_summarized,

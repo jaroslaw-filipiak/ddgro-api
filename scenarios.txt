@@ -1,0 +1,155 @@
+testowane scenariusze
+==========================
+
+
+wejście: 
+
+total_area: 455
+count: 1
+lowest: 10
+highest: 7300
+slab_width: 600
+slab_height: 600
+main_system: standard
+type: slab
+
+wyjście: 
+idealnie co do sztuki jak w szacuciu
+127.0.0.1:8000/api/application/26
+
+==================================
+
+wejście: 
+
+total_area: 455
+count: 1
+lowest: 10
+highest: 7300
+slab_width: 600
+slab_height: 600
+main_system: spiral
+type: slab
+
+wyjście: 
+jest ok , pojedyńcze sztuki przy spiral po 30 pokazuje na szacusiu a w wyliczeniach 
+po 29 
+
+różnica 8 wsporników na zamówieniu za 55 000 zł
+
+
+==================================
+
+wejście: 
+
+total_area: 455
+count: 1
+lowest: 10
+highest: 7300
+slab_width: 600
+slab_height: 600
+main_system: max
+type: slab
+
+wyjście: 
+jest w miare ok , jest drobna różnica przy przeliczaniu ponieważ w tym wypadku najpierw jest sprawdzany głowny system 
+główny system to jest max
+system bierze najpierw sprawdza max jaki ma minimalny zakres
+dobiera sobie wsporniki od 45mm do 950
+
+potem sprawdza sobie te dane z formularza i widzi, że trzeba dobrać wsporniki poniżej zakresu 45 i bierze sobie serie 
+spiral i dobiera wsporniki ze spirala
+
+Na finalnym wyliczeniu wsporniki ze spirala sa 1:1 jak na szacusiu 
+W serii spiral na szacusiu mamy 44 wsporniki MAX45-70 a w aktualnym wyliczeniu mamy 
+36 takich wsporników ale za to jest dodanych 7 sztuk z przedzialu  30 - 50 mm ponieważ system bierze sobie 
+spirala i zaczyna od 45 mm w pierwszej kolejności 
+
+Szacuś wylicza w tym wypadku 1369 wsporników a na wyliczeniu finalnym jest ich 1370 a tutaj 
+mamy to samo wyliczenie 1369 a na zamówieniu wychodzi 1368
+
+zamówienie na szacusiu : 59,468,68 zł różnica finalna 2 wsporniki +  7 sztuk jest w innym ale zgadzającym sie przedziale
+
+
+==================================
+
+wejście: 
+
+total_area: 150
+count: 1
+lowest: 300
+highest: 300
+slab_width: 600
+slab_height: 600
+main_system: standard
+type: slab
+
+
+Jest ok co do sztuki
+
+
+==================================
+
+wejście: 
+
+total_area: 150
+count: 1
+lowest: 300
+highest: 300
+slab_width: 600
+slab_height: 600
+main_system: spiral
+type: slab
+
+Bardzo dziwny przypadek ponieważ spiral  zaczyna się od 10mm a kończy na 210 podczas 
+gdy  najniższa wartośc wspornika to 300mm , na szacusiu w ogóle wówczas nie wylicza tego systemu co jest prawidłowe i zamiast 
+tego bierze standarda i maxa
+
+rozwiązanie do zrobienia: w samym formularzu na etapie wyskakuje komunikat że nie można tego systemu wybrać
+albo ten system nie jest pokazywany w kroku system 
+
+Rozwiązanie : w kroku system ten element nie będzie pokazywany i klient będie miał do wyboru te 
+systemy, które pasują do podanego zakresu
+
+==================================
+
+
+wejście: 
+
+total_area: 150
+count: 1
+lowest: 300
+highest: 300
+slab_width: 600
+slab_height: 600
+main_system: spiral
+type: slab
+
+To jest ten sam scenariusz co wyżej tylko zmiana systemu na spiral 
+liczy tak samo jak Szacuś
+
+
+==================================
+
+
+wejście: 
+
+total_area: 150
+count: 1
+lowest: 300
+highest: 300
+slab_width: 600
+slab_height: 600
+main_system: max
+type: slab
+
+Wszystko ok 2 wsporniki róznicy na zamówieniu za 20 000 ale z perspektywy klienta otrzyma on 
+poprawne zamówienie. W szacusiu jest 325 wsporników max 350-550 a teraz będzie tych wsporników 324
+
+z kolei w wspornikach max 550-750 jest 79 sztuk na szacusiu a teraz będzie 81
+
+
+
+
+
+
+
