@@ -221,7 +221,7 @@ class ApplicationController extends Controller
                 }
 
                 if (!$has_atleast_one_item_in_main_system) {
-                //   trzeba obsłużyć tą sytuację
+                //   trzeba obsłużyć tą sytuację ale raczej na froncie nie przepuszcze tego formularza 
         
                 $systems = ['spiral','standard','max'];
 
@@ -295,7 +295,7 @@ class ApplicationController extends Controller
             $over_main_system_grouped = [];
             $over_main_system_summarized = [];
 
-            if ($diff_highest > 0 && $diff_highest < $main_system_range_max) {
+            if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
 
                 switch($application->main_system) {
                     //  tak musi zostać to na przyszlośc ponieważ dojdą nowe systemy
@@ -375,10 +375,88 @@ class ApplicationController extends Controller
                 
             }
 
+            // time to crate order
 
-          
+            $main_system_products = DB::table('products')
+            ->where('type', $application->type)
+            ->where('series', $application->main_system)
+            ->get();
+
+            $under_main_system_products = DB::table('products')
+            ->where('type', $application->type)
+            ->where('series', $under_main_system_name)
+            ->get();
+
+            $over_main_system_products = DB::table('products')
+            ->where('type', $application->type)
+            ->where('series', $over_main_system_name)
+            ->get();
+
+            $order_for_main_system = [];
+            $order_for_under_main_system = [];
+            $order_for_over_main_system = [];
+
+            foreach ($main_system_products as $product) {
+                // Check if the "height_mm" attribute matches any key in the main_system_summarized array
+                if (array_key_exists($product->height_mm, $main_system_summarized) && $main_system_summarized[$product->height_mm] > 0) {
+
+                    // Add the count value corresponding to the product's height_mm to the product
+                     $product->count = $main_system_summarized[$product->height_mm];
+
+                     //Add total price
+                     $product->total_price = number_format($product->price_net * $product->count, 2);
+
+                    // Add the product to the filtered products array
+                    $order_for_main_system[] = $product;
+                }
+            }
+
+        
+            if ($diff_lowest > 0 && $diff_lowest < $main_system_range_min) {
+              
+
+                foreach ($under_main_system_products as $product) {
+                    // Check if the "height_mm" attribute matches any key in the under_main_system_summarized array
+                    if (array_key_exists($product->height_mm, $under_main_system_summarized) && $under_main_system_summarized[$product->height_mm] > 0) {
+                        // Add the count value corresponding to the product's height_mm to the product
+                        $product->count = $under_main_system_summarized[$product->height_mm];
+
+                         //Add total price
+                        $product->total_price = number_format($product->price_net * $product->count, 2);
+                    
+                        // Add the product to the filtered products array
+                        $order_for_under_main_system[] = $product;
+                    }
+                }
+            }
+
+            if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
+            
+
+                foreach ($over_main_system_products as $product) {
+                    // Check if the "height_mm" attribute matches any key in the over_main_system_summarized array
+                    if (array_key_exists($product->height_mm, $over_main_system_summarized) && $over_main_system_summarized[$product->height_mm] > 0) {
+                        // Add the count value corresponding to the product's height_mm to the product
+                        $product->count = $over_main_system_summarized[$product->height_mm];
+
+                        //Add total price
+                        $product->total_price = number_format($product->price_net * $product->count, 2);
+                          
+                        // Add the product to the filtered products array
+                        $order_for_over_main_system[] = $product;
+                    }
+                }
+            }
+
+
+    
            
             return response()->json([
+                'order_for_main_system' => $order_for_main_system,
+                'order_for_under_main_system' => $order_for_under_main_system,
+                'order_for_over_main_system' => $order_for_over_main_system,
+                'main_system_products' => $main_system_products,
+               
                 'has_items_in_main_system' => $has_atleast_one_item_in_main_system,
                 'over_main_system_grouped_level_2' => $over_main_system_grouped_level_2,
                 'over_main_system_summarized_level_2' => $over_main_system_summarized_level_2,
