@@ -32,9 +32,25 @@ Route::get('/mailable', function () {
     return new App\Mail\ApplicationDataMail($application);
 });
 
-Route::get('/pdf-template-preview', function () {
-    return view('pdf-template');
+Route::get('/pdf-template-preview/{applicationId}', function ($applicationId) {
+    // Instantiate the ApplicationController
+    $applicationController = new ApplicationController();
+
+    // Call the 'show' method to retrieve the application data
+    $response = $applicationController->show($applicationId);
+
+    // Decode the JSON response
+    $application = json_decode($response->getContent());
+
+    // Check if the application data exists
+    if (!$application) {
+        abort(404); // Handle the case where application is not found
+    }
+
+    // Return the 'pdf-template' view with the application data
+    return view('pdf-template', ['application' => $application]);
 });
+
 
 Route::get('/pdf-generate', function () {
     $pdf = PDF::loadView('pdf-template');

@@ -56,8 +56,8 @@
 
     <table width="100%">
         <tr>
-            <td><strong>From:</strong> Linblum - Barrio teatral</td>
-            <td><strong>To:</strong> Linblum - Barrio Comercial</td>
+            <td><strong>From:</strong> {{ $application->data->lowest }} </td>
+            <td><strong>To:</strong>{{$application->over_main_system_name}}</td>
         </tr>
 
     </table>

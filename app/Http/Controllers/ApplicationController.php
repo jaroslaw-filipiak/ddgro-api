@@ -9,7 +9,8 @@ use App\Models\Application;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\ApplicationDataMail;
 use Illuminate\Support\Facades\DB;
-
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\Storage;
 
 class ApplicationController extends Controller
 {
@@ -122,9 +123,26 @@ class ApplicationController extends Controller
         // Validation passed, so create a new application
         $application = Application::create($data);
 
+        // Generate PDF 
+        $pdf = PDF::loadView('pdf-template', ['application' => $application]);
+
+
+        // Save the PDF to the storage
+        $pdfPath = 'pdfs/' . uniqid() . '.pdf'; // Generate a unique filename
+        Storage::put($pdfPath, $pdf->output()); // Save the PDF to the storage
+
+        // Generate link to the PDF
+         $pdfUrl = Storage::url($pdfPath); // Get the URL of the saved PDF
+
+    
+        // Update the application with the PDF URL
+        $application->pdf_url = $pdfUrl;
+        $application->save();
+      
 
         // Send email
         Mail::to('info@j-filipiak.pl')->send(new ApplicationDataMail($application));
+
 
         // Return a JSON response
         return response()->json([
@@ -455,8 +473,7 @@ class ApplicationController extends Controller
                 'order_for_main_system' => $order_for_main_system,
                 'order_for_under_main_system' => $order_for_under_main_system,
                 'order_for_over_main_system' => $order_for_over_main_system,
-                'main_system_products' => $main_system_products,
-               
+                'main_system_products' => $main_system_products,       
                 'has_items_in_main_system' => $has_atleast_one_item_in_main_system,
                 'over_main_system_grouped_level_2' => $over_main_system_grouped_level_2,
                 'over_main_system_summarized_level_2' => $over_main_system_summarized_level_2,
