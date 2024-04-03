@@ -120,6 +120,7 @@
             style="text-align: center; vertical-align: top; width: 600px; max-width: 600px; background-color: #ffffff;"
             width="600">
             <tbody>
+
                 <tr>
                     <td style="width: 596px; vertical-align: top; padding-left: 30px; padding-right: 30px; padding-top: 30px; padding-bottom: 40px;"
                         width="596">
@@ -127,6 +128,7 @@
                         <h1
                             style="font-size: 20px; line-height: 24px; font-family: 'Helvetica', Arial, sans-serif; font-weight: 600; text-decoration: none; color: #000000;">
                             Hej, <?php echo $name; ?>! Dziękujemy za skorzystanie
+
                             </br> z naszego konfiguratora</h1>
 
                         <p
@@ -142,7 +144,8 @@
                   <i style="letter-spacing: 25px; mso-font-width: -100%; mso-text-raise: 30pt;">&nbsp;</i>
                 <![endif]-->
 
-                            <span style="mso-text-raise: 15pt; color: #fff; font-weight: bold;">Pobierz PDF</span>
+                            <a download href="{{$pdf_url}}"
+                                style="mso-text-raise: 15pt; color: #fff; font-weight: bold;">Pobierz PDF</a>
                             <!--[if mso]>
                   <i style="letter-spacing: 25px; mso-font-width: -100%;">&nbsp;</i>
                 <![endif]-->

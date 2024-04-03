@@ -36,7 +36,7 @@ class ApplicationDataMail extends Mailable
     {
         return new Envelope(
             from: new Address('info@j-filipiak.pl', 'DDGRO'),
-            subject: 'Application Data Mail',
+            subject: 'Zestawienie wsporników',
         );
     }
 
@@ -51,6 +51,11 @@ class ApplicationDataMail extends Mailable
             view: 'mail.application-data-mail',
             with: [
                 'name' => $this->application->name_surname,
+                'email' => $this->application->email,
+                'phone' => $this->application->phone,
+                'message' => $this->application->message,
+                'pdf_url' => $this->application->pdf_url,
+                
             ]
         );
     }

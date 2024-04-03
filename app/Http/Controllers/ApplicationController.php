@@ -15,6 +15,31 @@ use Illuminate\Support\Facades\Storage;
 class ApplicationController extends Controller
 {
 
+    private function generatePdf($application)
+    
+    {
+          // Generate PDF using application data
+          $pdf = PDF::loadView('pdf-template', ['application' => $application]);
+
+          return $pdf;
+    }
+
+    private function storePdf($pdf)
+    {
+        // Store PDF in storage
+        $pdfPath = 'pdfs/' . uniqid() . '.pdf';
+        Storage::put($pdfPath, $pdf->output());
+
+        // Return path to stored PDF
+        return $pdfPath;
+    }
+
+    private function sendEmail($application, $pdfPath)
+    {
+        // Send email with application data and PDF
+        Mail::to('')->send(new ApplicationDataMail($application, $pdfPath));
+    }
+    
     public function index()
     {
         $applications = Application::all();
@@ -123,24 +148,31 @@ class ApplicationController extends Controller
         // Validation passed, so create a new application
         $application = Application::create($data);
 
-        // Generate PDF 
-        $pdf = PDF::loadView('pdf-template', ['application' => $application]);
+        //from show i need to get the data to generate pdf
+        $show = $this->show($application->id);
 
+        // Generate PDF 
+        $pdf = PDF::loadView('pdf-template', ['application' => $show->original]);
+        
 
         // Save the PDF to the storage
         $pdfPath = 'pdfs/' . uniqid() . '.pdf'; // Generate a unique filename
-        Storage::put($pdfPath, $pdf->output()); // Save the PDF to the storage
-
-        // Generate link to the PDF
-         $pdfUrl = Storage::url($pdfPath); // Get the URL of the saved PDF
-
+        
+        // Storage::put($pdfPath, $pdf->output()); // Save the PDF to the storage
+        Storage::put($pdfPath, $pdf->output()); // Save the PDF to the public storage
+        
     
+        // Generate link to the PDF
+        //  $pdfUrl = Storage::url($pdfPath);
+        $pdfUrl = env('APP_URL') . '/storage/app/' . $pdfPath;
+
         // Update the application with the PDF URL
         $application->pdf_url = $pdfUrl;
         $application->save();
-      
 
         // Send email
+       
+        // $pdfUrl = Storage::url($pdfPath); 
         Mail::to('info@j-filipiak.pl')->send(new ApplicationDataMail($application));
 
 
@@ -149,8 +181,12 @@ class ApplicationController extends Controller
             'success' => true,
             'message' => 'Formularz został wysłany!',
             'application' => $application,
+            'show' => $show->original,
 
         ], 201);
+
+      
+
     }
 
     public function show($id)
@@ -508,4 +544,7 @@ class ApplicationController extends Controller
             ], 404);
         }
     }
+
+    
+
 }

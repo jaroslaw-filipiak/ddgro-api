@@ -44,7 +44,6 @@ Route::post('product', [ProductController::class, 'store']);
 
 Route::get('accesories', [AccesoriesController::class, 'index']);
 
-
 /*
 |--------------------------------------------------------------------------
 | FORM APPLICATION

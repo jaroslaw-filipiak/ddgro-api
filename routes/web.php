@@ -6,6 +6,7 @@ use App\Http\Controllers\AccesoriesController;
 use App\Http\Controllers\ApplicationController;
 use App\Models\Application;
 use Barryvdh\DomPDF\Facade\Pdf;
+use App\Mail\ApplicationDataMail;
 
 /*
 |--------------------------------------------------------------------------
@@ -22,14 +23,26 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('products/import', [ProductController::class, 'import']);
-Route::get('accesories/import', [AccesoriesController::class, 'import']);
+// Route::get('products/import', [ProductController::class, 'import']);
+// Route::get('accesories/import', [AccesoriesController::class, 'import']);
 
 
 Route::get('/mailable', function () {
+    
     $application = App\Models\Application::find(4);
 
     return new App\Mail\ApplicationDataMail($application);
+});
+
+Route::get('/mailable/{applicationId}', function ($applicationId) {
+    $applicationController = new ApplicationController();
+    $applicationData = $applicationController->show($applicationId)->original;
+    
+    // Create a new Application instance and fill it with the data
+    $application = new Application();
+    $application->fill($applicationData);
+
+    return new ApplicationDataMail($application);
 });
 
 Route::get('/pdf-template-preview/{applicationId}', function ($applicationId) {
@@ -37,18 +50,18 @@ Route::get('/pdf-template-preview/{applicationId}', function ($applicationId) {
     $applicationController = new ApplicationController();
 
     // Call the 'show' method to retrieve the application data
-    $response = $applicationController->show($applicationId);
+    $show = $applicationController->show($applicationId);
 
     // Decode the JSON response
-    $application = json_decode($response->getContent());
+    // $application = json_decode($show->original);
 
     // Check if the application data exists
-    if (!$application) {
+    if (!$show) {
         abort(404); // Handle the case where application is not found
     }
 
     // Return the 'pdf-template' view with the application data
-    return view('pdf-template', ['application' => $application]);
+    return view('pdf-template', ['application' => $show->original]);
 });
 
 
