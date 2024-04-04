@@ -146,8 +146,7 @@
                             Pobierz PDF
 
 
-                            <a download href="{{$pdf_url}}"
-                                style="display: block;color: #fff; font-weight: bold;">Pobierz PDF</a>
+
                             <!--[if mso]>
                   <i style="letter-spacing: 25px; mso-font-width: -100%;">&nbsp;</i>
                 <![endif]-->
