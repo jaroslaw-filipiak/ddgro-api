@@ -446,9 +446,16 @@ class ApplicationController extends Controller
             ->where('series', $over_main_system_name)
             ->get();
 
+            // najwyzszy to zawsz jest max dla 'slab'
+            $over_main_system_level_2_products = DB::table('products')
+            ->where('type', $application->type)
+            ->where('series', 'max')
+            ->get();
+
             $order_for_main_system = [];
             $order_for_under_main_system = [];
             $order_for_over_main_system = [];
+            $order_for_over_main_system_level_2 = [];
 
             foreach ($main_system_products as $product) {
                 // Check if the "height_mm" attribute matches any key in the main_system_summarized array
@@ -502,13 +509,28 @@ class ApplicationController extends Controller
                 }
             }
 
+            if ($diff_highest_level_2 > 0) {
+                foreach ($over_main_system_level_2_products as $product) {
+                    // Check if the "height_mm" attribute matches any key in the over_main_system_summarized_level_2 array
+                    if (array_key_exists($product->height_mm, $over_main_system_summarized_level_2) && $over_main_system_summarized_level_2[$product->height_mm] > 0) {
+                        // Add the count value corresponding to the product's height_mm to the product
+                        $product->count = $over_main_system_summarized_level_2[$product->height_mm];
 
+                        //Add total price
+                        $product->total_price = number_format($product->price_net * $product->count, 2);
+                          
+                        // Add the product to the filtered products array
+                        $order_for_over_main_system_level_2[] = $product;
+                    }
+                }
+            }
     
            
             return response()->json([
                 'order_for_main_system' => $order_for_main_system,
                 'order_for_under_main_system' => $order_for_under_main_system,
                 'order_for_over_main_system' => $order_for_over_main_system,
+                'order_for_over_main_system_level_2' => $order_for_over_main_system_level_2,
                 'main_system_products' => $main_system_products,       
                 'has_items_in_main_system' => $has_atleast_one_item_in_main_system,
                 'over_main_system_grouped_level_2' => $over_main_system_grouped_level_2,
@@ -517,6 +539,7 @@ class ApplicationController extends Controller
                 'highest' => $highest,
                 'diff_lowest' => $diff_lowest,
                 'diff_highest' => $diff_highest,
+                'diff_highest_level_2' => $diff_highest_level_2,
                 'main_system_name' => $application->main_system,
                 'over_main_system_name' => $over_main_system_name,
                 'over_main_system_level_2_name' => 'max',

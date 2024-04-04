@@ -70,7 +70,6 @@
             </tr>
         </tbody>
     </table>
-    <!-- DivTable.com -->
 
     <table width="100%"
         style="border-bottom: 1px solid orange; padding-bottom: 14px; border-top: 1px solid orange; padding-top: 14px; margin-top: 20px;">
@@ -93,20 +92,7 @@
             </tr>
         </tbody>
     </table>
-    <!-- DivTable.com -->
 
-    <!-- <table width="100%">
-        <tr>
-            <td valign="top"><img src="https://via.placeholder.com/150" alt="" width="150" /></td>
-            <td>Deck-Dry Polska sp. z o.o.</td>
-            <td>ul. Wenus 73A, 80-299 Gdańsk.</td>
-            <td>tel. +48 58 585 97 37</td>
-            <td>www.ddgro.eu</td>
-            <td>sales@ddgro.eu></td>
-
-        </tr>
-
-    </table> -->
 
     <table width="100%" style="margin-top: 14px;">
         <tr>
@@ -125,7 +111,6 @@
     <br />
 
 
-
     <!-- main system  -->
     <table class="products" width="100%" style="font-size: 10px;">
         <thead style="background-color: lightgray; text-align: left;">
@@ -142,6 +127,7 @@
         <tbody>
 
             <!-- under main system  -->
+            @if ($application['under_main_system_name'] !== 'initial')
 
             <tr style="font-size: 12px; text-align: left; background-color: lightgray;">
                 <td colspan="7" style="padding-bottom: 10px; padding-top: 6px;">
@@ -166,6 +152,8 @@
                 <td>&nbsp;&nbsp;{{ $product->total_price }}</td>
             </tr>
             @endforeach
+
+            @endif
 
             <!-- main system -->
 
@@ -195,6 +183,9 @@
 
             <!-- over system -->
 
+            @if ($application['over_main_system_name'] !== 'initial' &&
+            !empty($application['order_for_over_main_system']))
+
             <tr style="font-size: 12px; text-align: left; background-color: lightgray;">
                 <td colspan="7" style="padding-bottom: 10px; padding-top: 6px;">
                     &nbsp;&nbsp;System
@@ -218,6 +209,42 @@
                 <td>&nbsp;&nbsp;{{ $product->total_price }}</td>
             </tr>
             @endforeach
+
+            @endif
+
+            <!-- over system level 2 highest -->
+
+            @if (
+            !empty($application['order_for_over_main_system_level_2']))
+
+            <tr style="font-size: 12px; text-align: left; background-color: lightgray;">
+                <td colspan="7" style="padding-bottom: 10px; padding-top: 6px;">
+                    &nbsp;&nbsp;System
+                    <strong>{{$application['over_main_system_level_2_name'] }}</strong>
+                    pod {{$application['data']['type'] === 'slab' ? 'płyty' : 'deski' }}
+                </td>
+            </tr>
+
+            @foreach($application['order_for_over_main_system_level_2'] as $product)
+            <tr>
+                @if(isset($product->distance_code))
+                <td scope="row">&nbsp;&nbsp;{{ $product->distance_code }}</td>
+                @else
+                <td scope="row">&nbsp;&nbsp;---</td>
+                @endif
+                <td>&nbsp;&nbsp;{{ $product->name }}</td>
+                <td>&nbsp;&nbsp;{{ $product->short_name }}</td>
+                <td>&nbsp;&nbsp;{{ $product->height_mm }}</td>
+                <td>&nbsp;&nbsp;{{ $product->price_net }}</td>
+                <td>&nbsp;&nbsp;{{ $product->count }}</td>
+                <td>&nbsp;&nbsp;{{ $product->total_price }}</td>
+            </tr>
+            @endforeach
+
+            @endif
+
+
+
 
         </tbody>
 

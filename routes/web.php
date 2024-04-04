@@ -37,10 +37,19 @@ Route::get('/mailable', function () {
 Route::get('/mailable/{applicationId}', function ($applicationId) {
     $applicationController = new ApplicationController();
     $applicationData = $applicationController->show($applicationId)->original;
+    $pdf = PDF::loadView('pdf-template', ['application' => $applicationData]);
+    $pdfPath = storage_path('app/public/pdf-template.pdf');
+    $pdfUrl = asset('storage/pdf-template.pdf');
+
+    $applicationData['pdfPath'] = $pdfPath;
     
     // Create a new Application instance and fill it with the data
     $application = new Application();
+    
+    $application->pdf_url = $pdfUrl;
     $application->fill($applicationData);
+
+    // dd($applicationData);
 
     return new ApplicationDataMail($application);
 });

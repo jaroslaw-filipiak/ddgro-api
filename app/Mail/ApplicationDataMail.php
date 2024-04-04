@@ -32,6 +32,8 @@ class ApplicationDataMail extends Mailable
      *
      * @return \Illuminate\Mail\Mailables\Envelope
      */
+
+    //  TODO: change the email address
     public function envelope()
     {
         return new Envelope(
