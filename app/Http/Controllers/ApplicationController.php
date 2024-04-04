@@ -173,7 +173,7 @@ class ApplicationController extends Controller
         // Send email
        
         // $pdfUrl = Storage::url($pdfPath); 
-        Mail::to('info@j-filipiak.pl')->send(new ApplicationDataMail($application));
+        Mail::to($application->email)->send(new ApplicationDataMail($application));
 
 
         // Return a JSON response
