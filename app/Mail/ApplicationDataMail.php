@@ -49,6 +49,7 @@ class ApplicationDataMail extends Mailable
      */
     public function content()
     {
+
         return new Content(
             view: 'mail.application-data-mail',
             with: [
@@ -57,7 +58,6 @@ class ApplicationDataMail extends Mailable
                 'phone' => $this->application->phone,
                 'message' => $this->application->message,
                 'pdf_url' => $this->application->pdf_url,
-                
             ]
         );
     }
