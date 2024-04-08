@@ -248,23 +248,24 @@
 
         </tbody>
 
-        <!-- <tfoot>
+        <tfoot>
+
             <tr>
-                <td colspan="3"></td>
-                <td align="right">Subtotal $</td>
-                <td align="right">1635.00</td>
+                <td colspan="5"></td>
+                <td align="right">Łącznie</td>
+                <td align="right">{{ $application->total }}</td>
             </tr>
-            <tr>
-                <td colspan="3"></td>
+            <tr style="display: none;">
+                <td colspan="5"></td>
                 <td align="right">Tax $</td>
                 <td align="right">294.3</td>
             </tr>
-            <tr>
-                <td colspan="3"></td>
+            <tr style="display: none;">
+                <td colspan="5"></td>
                 <td align="right">Total $</td>
                 <td align="right" class="gray">$ 1929.3</td>
             </tr>
-        </tfoot> -->
+        </tfoot>
     </table>
 
 </body>

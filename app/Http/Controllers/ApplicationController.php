@@ -460,6 +460,8 @@ class ApplicationController extends Controller
             $order_for_over_main_system = [];
             $order_for_over_main_system_level_2 = [];
 
+            
+
             foreach ($main_system_products as $product) {
                 // Check if the "height_mm" attribute matches any key in the main_system_summarized array
                 if (array_key_exists($product->height_mm, $main_system_summarized) && $main_system_summarized[$product->height_mm] > 0) {
@@ -527,9 +529,34 @@ class ApplicationController extends Controller
                     }
                 }
             }
+            $total = 0;
+
+            // Summarize the price of products in $order_for_main_system
+            foreach ($order_for_main_system as $product) {
+                $total += $product->price_net * $product->count;
+            }
+
+            // Summarize the price of products in $order_for_under_main_system
+            foreach ($order_for_under_main_system as $product) {
+                $total += $product->price_net * $product->count;
+            }
+
+            // Summarize the price of products in $order_for_over_main_system
+            foreach ($order_for_over_main_system as $product) {
+                $total += $product->price_net * $product->count;
+            }
+
+            // Summarize the price of products in $order_for_over_main_system_level_2
+            foreach ($order_for_over_main_system_level_2 as $product) {
+                $total += $product->price_net * $product->count;
+            }
+
+            // Round the total to 2 decimal places
+            $total = number_format($total, 2);
     
            
             return response()->json([
+                'total' => $total,
                 'order_for_main_system' => $order_for_main_system,
                 'order_for_under_main_system' => $order_for_under_main_system,
                 'order_for_over_main_system' => $order_for_over_main_system,
@@ -542,7 +569,7 @@ class ApplicationController extends Controller
                 'highest' => $highest,
                 'diff_lowest' => $diff_lowest,
                 'diff_highest' => $diff_highest,
-               
+              
                 'main_system_name' => $application->main_system,
                 'over_main_system_name' => $over_main_system_name,
                 'over_main_system_level_2_name' => 'max',
