@@ -43,11 +43,14 @@ class ApplicationController extends Controller
     public function index()
     {
         $applications = Application::all();
-
+        $data = $applications->map(function ($item) {
+            return collect($item)->except(['products', 'm_standard', 'm_spiral', 'm_max', 'accesories'])->toArray();
+        });
+       
         return response()->json([
             'status' => 200,
             'message' => 'Applications List',
-            'data' => $applications
+            'data' =>  $data
         ], 200);
     }
 
@@ -509,7 +512,7 @@ class ApplicationController extends Controller
                 }
             }
 
-            if ($diff_highest_level_2 > 0) {
+            if (isset($diff_highest_level_2) && $diff_highest_level_2 > 0) {
                 foreach ($over_main_system_level_2_products as $product) {
                     // Check if the "height_mm" attribute matches any key in the over_main_system_summarized_level_2 array
                     if (array_key_exists($product->height_mm, $over_main_system_summarized_level_2) && $over_main_system_summarized_level_2[$product->height_mm] > 0) {
@@ -539,7 +542,7 @@ class ApplicationController extends Controller
                 'highest' => $highest,
                 'diff_lowest' => $diff_lowest,
                 'diff_highest' => $diff_highest,
-                'diff_highest_level_2' => $diff_highest_level_2,
+               
                 'main_system_name' => $application->main_system,
                 'over_main_system_name' => $over_main_system_name,
                 'over_main_system_level_2_name' => 'max',
