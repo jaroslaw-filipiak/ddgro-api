@@ -26,4 +26,26 @@ class AccesoriesController extends Controller
             'data' => $accesories
         ], 200);
     }
+
+    public function get_wood_accesories()
+    {
+        $accesories = Accesories::where('for_type', 'wood')->get();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Wood Accesories List',
+            'data' => $accesories
+        ], 200);
+    }
+
+    public function get_slab_accesories()
+    {
+        $accesories = Accesories::where('for_type', 'slab')->get();
+
+        return response()->json([
+            'status' => 200,
+            'message' => 'Slab Accesories List',
+            'data' => $accesories
+        ], 200);
+    }
 }

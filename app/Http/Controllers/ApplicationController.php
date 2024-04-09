@@ -222,6 +222,10 @@ class ApplicationController extends Controller
                     $main_system = json_decode($application->m_standard);
                     $main_system_range_min = 30;
                     $main_system_range_max = 420;
+
+                    // jest main system to odrazu dla main systemu sprawdzam czy są wybrane przez usera jakieś akcesoria i dodaje akcesoria
+
+
                     break;
                 case 'spiral':
                     $main_system = json_decode($application->m_spiral);
@@ -432,7 +436,7 @@ class ApplicationController extends Controller
                 
             }
 
-            // time to crate order
+            // time to crate order 
 
             $main_system_products = DB::table('products')
             ->where('type', $application->type)
@@ -529,6 +533,25 @@ class ApplicationController extends Controller
                     }
                 }
             }
+
+            //additional accessories
+            // "additional_accessories": "[\"sbr-3mm\",\"glowica-samopoziomujaca\",\"sh\",\"sbr-8mm\"]",
+
+            /*
+
+              choose: sh:  {
+                sh100-guma-na-wspornik for standard / slab
+                sh145-guma-na-wspornik for spiral / slab
+                sh145-guma-na-wspornik for max / slab
+              }
+              
+            */
+
+        
+            // Function to filter accessories based on IDs
+        
+
+            // summarize..
             $total = 0;
 
             // Summarize the price of products in $order_for_main_system
@@ -553,9 +576,9 @@ class ApplicationController extends Controller
 
             // Round the total to 2 decimal places
             $total = number_format($total, 2);
-    
            
             return response()->json([
+                // 'additional_accessories' => $accesories_for_selected_type,
                 'total' => $total,
                 'order_for_main_system' => $order_for_main_system,
                 'order_for_under_main_system' => $order_for_under_main_system,
@@ -569,7 +592,6 @@ class ApplicationController extends Controller
                 'highest' => $highest,
                 'diff_lowest' => $diff_lowest,
                 'diff_highest' => $diff_highest,
-              
                 'main_system_name' => $application->main_system,
                 'over_main_system_name' => $over_main_system_name,
                 'over_main_system_level_2_name' => 'max',
@@ -585,6 +607,7 @@ class ApplicationController extends Controller
                 'over_main_system_summarized' => $over_main_system_summarized,
                 'main_system_range_min' => $main_system_range_min,
                 'main_system_range_max' => $main_system_range_max,
+                
                
                  'data' => collect($application)->except('products')->except('accesories')->except('additional_accessories')->except('m_standard'),
 

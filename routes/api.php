@@ -43,6 +43,8 @@ Route::post('product', [ProductController::class, 'store']);
 */
 
 Route::get('accesories', [AccesoriesController::class, 'index']);
+Route::get('accesories-for-wood', [AccesoriesController::class, 'get_wood_accesories']);
+Route::get('accesories-for-slab', [AccesoriesController::class, 'get_slab_accesories']);
 
 /*
 |--------------------------------------------------------------------------

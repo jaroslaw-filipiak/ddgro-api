@@ -21,5 +21,7 @@ class Accesories extends Model
         'price_net',
         'wood_width',
         'pieces_in_m2',
+        'for_type',
+        'system',
     ];
 }

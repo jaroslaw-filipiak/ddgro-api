@@ -24,7 +24,7 @@ Route::get('/', function () {
 });
 
 // Route::get('products/import', [ProductController::class, 'import']);
-// Route::get('accesories/import', [AccesoriesController::class, 'import']);
+Route::get('accesories/import', [AccesoriesController::class, 'import']);
 
 
 Route::get('/mailable', function () {
