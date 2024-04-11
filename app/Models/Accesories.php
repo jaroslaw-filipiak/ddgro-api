@@ -22,6 +22,7 @@ class Accesories extends Model
         'wood_width',
         'pieces_in_m2',
         'for_type',
-        'system',
+        'name_for_client',
+        'fits_to_system'
     ];
 }

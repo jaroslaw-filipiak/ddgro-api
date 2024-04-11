@@ -17,6 +17,8 @@ wyjście:
 idealnie co do sztuki jak w szacuciu
 127.0.0.1:8000/api/application/26
 
+
+teraz nie przeszedl wcale: 9 04 błąd
 ==================================
 
 wejście: 
@@ -35,6 +37,8 @@ jest ok , pojedyńcze sztuki przy spiral po 30 pokazuje na szacusiu a w wyliczen
 po 29 
 
 różnica 8 wsporników na zamówieniu za 55 000 zł
+
+też sie coś zepsuło...
 
 
 ==================================

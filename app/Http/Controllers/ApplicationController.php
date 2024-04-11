@@ -188,8 +188,7 @@ class ApplicationController extends Controller
 
         ], 201);
 
-      
-
+    
     }
 
     public function show($id)
@@ -222,10 +221,6 @@ class ApplicationController extends Controller
                     $main_system = json_decode($application->m_standard);
                     $main_system_range_min = 30;
                     $main_system_range_max = 420;
-
-                    // jest main system to odrazu dla main systemu sprawdzam czy są wybrane przez usera jakieś akcesoria i dodaje akcesoria
-
-
                     break;
                 case 'spiral':
                     $main_system = json_decode($application->m_spiral);
@@ -240,8 +235,6 @@ class ApplicationController extends Controller
             }
 
             // 3. take from #main_system all records that wys_mm is between $main_system_range_min and $main_system_range_max
-            
-
             $main_system = collect($main_system)->filter(function ($value, $key) use ($main_system_range_min, $main_system_range_max) {
                 return $value->wys_mm >= $main_system_range_min && $value->wys_mm <= $main_system_range_max;
             });
@@ -259,6 +252,8 @@ class ApplicationController extends Controller
                 $main_system_grouped[$range][] = $object;
             }
 
+
+        
             foreach ($main_system_grouped as $range => $objects) {
                 $count_in_range = 0;
                 foreach ($objects as $object) {
@@ -267,7 +262,8 @@ class ApplicationController extends Controller
                 $main_system_summarized[$range] = round($count_in_range);
             }
 
-             // tutaj sprawdzam czy powyższy forach w ogóle wyrzucił jakiś wynik ponieważ
+
+                // tutaj sprawdzam czy powyższy forach w ogóle wyrzucił jakiś wynik ponieważ
                 // może się zdarzyć taka sytuacja, że klient w formularzu zaznaczy wartości min 300 max 600
                 // i zaznaczy główny system spiral, który ma zakres od 10 do 210 a w minimum podanym prez klienta jest 
                 // 300 także po prostu będzie pusta tablica
@@ -285,6 +281,7 @@ class ApplicationController extends Controller
                 //   trzeba obsłużyć tą sytuację ale raczej na froncie nie przepuszcze tego formularza 
         
                 $systems = ['spiral','standard','max'];
+                // TODO: validacja na froncie
 
                 }
 
@@ -316,8 +313,6 @@ class ApplicationController extends Controller
                         break;
                 }
 
-            
-              
                 $under_main_system_range= collect(json_decode($under))->filter(function ($value, $key) use ($lowest, $main_system_range_min) {
                     return $value->wys_mm >= $lowest && $value->wys_mm < $main_system_range_min;
                 });
@@ -341,22 +336,25 @@ class ApplicationController extends Controller
                     }
                     $under_main_system_summarized[$range] = round($count_in_range);
                 }
-
-               
-
-
-                
             };
 
             // 6 check if there are any records higher than main system range
             // TODO: przy over nie moge na pałe pobierać maxa z main system, bo moze byc inny i tak samo chyba przy min ?
 
+           
             $diff_highest = $highest - $main_system_range_max;
+
+            // dd($diff_highest);
+            // dd($main_system_range_max);
+            
             $over_main_system_range = [];
             $over_main_system_grouped = [];
             $over_main_system_summarized = [];
 
-            if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
+
+            // TODO: tu jest jakiś bug przy drugim warunku
+            // if ($diff_highest > 0 && $diff_highest > $main_system_range_max)
+            if ($diff_highest > 0 ) {
 
                 switch($application->main_system) {
                     //  tak musi zostać to na przyszlośc ponieważ dojdą nowe systemy
@@ -438,7 +436,7 @@ class ApplicationController extends Controller
 
             // time to crate order 
 
-            $main_system_products = DB::table('products')
+            $main_system_products = DB::table('products')   
             ->where('type', $application->type)
             ->where('series', $application->main_system)
             ->get();
@@ -453,6 +451,9 @@ class ApplicationController extends Controller
             ->where('series', $over_main_system_name)
             ->get();
 
+
+          
+
             // najwyzszy to zawsz jest max dla 'slab'
             $over_main_system_level_2_products = DB::table('products')
             ->where('type', $application->type)
@@ -465,7 +466,17 @@ class ApplicationController extends Controller
             $order_for_over_main_system_level_2 = [];
 
             
+            // main system produkty + odrazu akcesoria dla main systemu
 
+            /*
+            TODO: bug if height_mm is not in main_system_summarized array
+              +"height_mm": "45-75"
+              array:7 [▼ // app\Http\Controllers\ApplicationController.php:472
+                "30-50" => 436.0
+                ]
+            */
+
+        
             foreach ($main_system_products as $product) {
                 // Check if the "height_mm" attribute matches any key in the main_system_summarized array
                 if (array_key_exists($product->height_mm, $main_system_summarized) && $main_system_summarized[$product->height_mm] > 0) {
@@ -481,7 +492,36 @@ class ApplicationController extends Controller
                 }
             }
 
-        
+            $main_system_total = 0;
+
+            // Loop through the array and calculate the sum of values
+            // wiem ile jest wsporników łącznie z głównego systemu 
+            // znam nazwę głownego systemu : $application->main_system
+
+            foreach ($main_system_summarized as $value) {
+                $main_system_total += $value;
+            }
+
+                $accesories_width_fits_to_main_system = DB::table('accesories')->where('for_type', $application->type)->get();
+
+                // Sample loop through accessories to find those compatible with the current main system
+                foreach ($accesories_width_fits_to_main_system as $accessory) {
+                   
+                    $fits_to_system = json_decode($accessory->fits_to_system);
+                  
+                    // Check if the accessory is compatible with the current main system
+                    if (in_array($application->main_system, $fits_to_system)) {
+                        // Add the accessory to the list of accessories for the current main system
+                        // add to each accesory count value that is equal to main_system_total
+                        $accessory->count = $main_system_total;
+                        $accessory->total_price = number_format($accessory->price_net * $accessory->count, 2);
+                        $main_system_accesories[] = $accessory;
+                    }   
+                }
+
+
+               
+                // if ($diff_lowest > 0 && $diff_lowest < $main_system_range_min) {
             if ($diff_lowest > 0 && $diff_lowest < $main_system_range_min) {
               
 
@@ -498,9 +538,49 @@ class ApplicationController extends Controller
                         $order_for_under_main_system[] = $product;
                     }
                 }
+                // =====
+
+                $under_main_system_total = 0;
+
+                // Loop through the array and calculate the sum of values
+                // wiem ile jest wsporników łącznie z głównego systemu 
+                // znam nazwę głownego systemu : $application->main_system
+    
+                foreach ($under_main_system_summarized as $value) {
+                    $under_main_system_total += $value;
+                }
+    
+                    $accesories_width_fits_to_under_main_system = DB::table('accesories')->where('for_type', $application->type)->get();
+    
+                    // Sample loop through accessories to find those compatible with the current main system
+                    foreach ($accesories_width_fits_to_under_main_system as $accessory) {
+                       
+                        $fits_to_system = json_decode($accessory->fits_to_system);
+                      
+                        // Check if the accessory is compatible with the current main system
+                        if (in_array($under_main_system_name, $fits_to_system)) {
+                            // Add the accessory to the list of accessories for the current main system
+                            // add to each accesory count value that is equal to main_system_total
+                            $accessory->count = $under_main_system_total;
+                            $accessory->total_price = number_format($accessory->price_net * $accessory->count, 2);
+                            $under_main_system_accesories[] = $accessory;
+                        }   
+                    }
+
+                
             }
 
+
+            //TODO: tu jest jakiś bug przy drugim warunku
+            // przed zmianami: if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
+            // diff highest może miec minusową wartość 
+            /*
             if ($diff_highest > 0 && $diff_highest > $main_system_range_max) {
+                wartośc minusowa w przypadku gdy np: lowest: 40  highest: 50 / main_system_min = 45 , main system max 950 czyli $lowest < $main_system_range_min
+              */
+
+                 
+            if ($diff_highest > 0 && $lowest > $main_system_range_min) {
             
 
                 foreach ($over_main_system_products as $product) {
@@ -516,6 +596,35 @@ class ApplicationController extends Controller
                         $order_for_over_main_system[] = $product;
                     }
                 }
+
+                // =====
+
+                $over_main_system_total = 0;
+
+                // Loop through the array and calculate the sum of values
+                // wiem ile jest wsporników łącznie z głównego systemu 
+                // znam nazwę głownego systemu : $application->main_system
+    
+                foreach ($over_main_system_summarized as $value) {
+                    $over_main_system_total += $value;
+                }
+    
+                    $accesories_width_fits_to_over_main_system = DB::table('accesories')->where('for_type', $application->type)->get();
+    
+                    // Sample loop through accessories to find those compatible with the current main system
+                    foreach ($accesories_width_fits_to_over_main_system as $accessory) {
+                       
+                        $fits_to_system = json_decode($accessory->fits_to_system);
+                      
+                        // Check if the accessory is compatible with the current main system
+                        if (in_array($over_main_system_name, $fits_to_system)) {
+                            // Add the accessory to the list of accessories for the current main system
+                            // add to each accesory count value that is equal to main_system_total
+                            $accessory->count = $over_main_system_total;
+                            $accessory->total_price = number_format($accessory->price_net * $accessory->count, 2);
+                            $over_main_system_accesories[] = $accessory;
+                        }   
+                    }
             }
 
             if (isset($diff_highest_level_2) && $diff_highest_level_2 > 0) {
@@ -532,23 +641,37 @@ class ApplicationController extends Controller
                         $order_for_over_main_system_level_2[] = $product;
                     }
                 }
+
+                $over_main_system_level_2_total = 0;
+
+                // Loop through the array and calculate the sum of values
+                // wiem ile jest wsporników łącznie z głównego systemu 
+                // znam nazwę głownego systemu : $application->main_system
+    
+                foreach ($over_main_system_summarized_level_2 as $value) {
+                    $over_main_system_level_2_total += $value;
+                }
+    
+                    $accesories_width_fits_to_over_main_system_summarized_level_2 = DB::table('accesories')->where('for_type', $application->type)->get();
+    
+                    // Sample loop through accessories to find those compatible with the current main system
+                    foreach ($accesories_width_fits_to_over_main_system_summarized_level_2 as $accessory) {
+                       
+                        $fits_to_system = json_decode($accessory->fits_to_system);
+                      
+                        // Check if the accessory is compatible with the current main system
+                        if (in_array($over_main_system_level_2_name, $fits_to_system)) {
+                            // Add the accessory to the list of accessories for the current main system
+                            // add to each accesory count value that is equal to main_system_total
+                            $accessory->count = $over_main_system_level_2_total;
+                            $accessory->total_price = number_format($accessory->price_net * $accessory->count, 2);
+                            $over_main_system_level_2_accesories[] = $accessory;
+                        }   
+                    }
             }
 
-            //additional accessories
-            // "additional_accessories": "[\"sbr-3mm\",\"glowica-samopoziomujaca\",\"sh\",\"sbr-8mm\"]",
+            // 
 
-            /*
-
-              choose: sh:  {
-                sh100-guma-na-wspornik for standard / slab
-                sh145-guma-na-wspornik for spiral / slab
-                sh145-guma-na-wspornik for max / slab
-              }
-              
-            */
-
-        
-            // Function to filter accessories based on IDs
         
 
             // summarize..
@@ -579,12 +702,14 @@ class ApplicationController extends Controller
            
             return response()->json([
                 // 'additional_accessories' => $accesories_for_selected_type,
+                'accesories_width_fits_to_main_system' => $accesories_width_fits_to_main_system,
                 'total' => $total,
                 'order_for_main_system' => $order_for_main_system,
                 'order_for_under_main_system' => $order_for_under_main_system,
                 'order_for_over_main_system' => $order_for_over_main_system,
                 'order_for_over_main_system_level_2' => $order_for_over_main_system_level_2,
-                'main_system_products' => $main_system_products,       
+                'main_system_products' => $main_system_products,   
+                'main_system_accesories' => $main_system_accesories,    
                 'has_items_in_main_system' => $has_atleast_one_item_in_main_system,
                 'over_main_system_grouped_level_2' => $over_main_system_grouped_level_2,
                 'over_main_system_summarized_level_2' => $over_main_system_summarized_level_2,
@@ -594,11 +719,14 @@ class ApplicationController extends Controller
                 'diff_highest' => $diff_highest,
                 'main_system_name' => $application->main_system,
                 'over_main_system_name' => $over_main_system_name,
+                'over_main_system_accesories' => isset($over_main_system_accesories) ? $over_main_system_accesories : [],
                 'over_main_system_level_2_name' => 'max',
+                'over_main_system_level_2_accesories'=> isset($over_main_system_level_2_accesories) ? $over_main_system_level_2_accesories : [],
                 'main_system' => $main_system,
                 'main_system_grouped' => $main_system_grouped,
                 'main_system_summarized' => $main_system_summarized,
                 'under_main_system_name' => $under_main_system_name,
+                'under_main_system_accesories' => isset($under_main_system_accesories) ? $under_main_system_accesories : [],
                 'under_main_system_range' => $under_main_system_range,
                 'under_main_system_grouped' => $under_main_system_grouped,
                 'under_main_system_summarized' => $under_main_system_summarized,

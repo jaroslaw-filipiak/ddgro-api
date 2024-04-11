@@ -15,7 +15,8 @@ return new class extends Migration
     {
         Schema::table('accesories', function (Blueprint $table) {
             $table->string('for_type')->nullable();
-            $table->string('system')->nullable();
+            $table->string('name_for_client')->nullable();
+            $table->json('fits_to_system')->nullable();
         });
     }
 
@@ -28,7 +29,8 @@ return new class extends Migration
     {
         Schema::table('accesories', function (Blueprint $table) {
             $table->dropColumn('for_type')->nullable();
-            $table->dropColumn('system')->nullable();
+            $table->dropColumn('name_for_client')->nullable();
+            $table->dropColumn('fits_to_system')->nullable();
         });
     }
 };
