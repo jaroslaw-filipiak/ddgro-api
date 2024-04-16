@@ -191,6 +191,7 @@ class ApplicationController extends Controller
     
     }
 
+
     public function show($id)
     {
 
@@ -252,8 +253,6 @@ class ApplicationController extends Controller
                 $main_system_grouped[$range][] = $object;
             }
 
-
-        
             foreach ($main_system_grouped as $range => $objects) {
                 $count_in_range = 0;
                 foreach ($objects as $object) {
