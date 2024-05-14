@@ -14,6 +14,8 @@ class AccesoriesController extends Controller
         Excel::import(new AccesoriesImport, 'accesories.xlsx');
 
         return redirect('/')->with('success', 'All good!');
+
+
     }
 
     public function index()
